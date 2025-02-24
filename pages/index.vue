@@ -7,20 +7,29 @@
       :color="book.color"
       :width="book.width"
       :height="book.height"
+      @click="goToPage(book.title)"
     />
   </div>
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
 const books = [
   { title: '星座', color: '#FFD700' },
   { title: '行星', color: '#FF4500' },
   { title: '宮位', color: '#1E90FF' },
   { title: '命盤', color: '#32CD32' },
 ];
+
+const goToPage = (title) => {
+  if (title === '星座') {
+    router.push('/constellation'); // 跳轉到 constellation 頁面
+  }
+};
 </script>
-
-
 
 <style scoped>
 .books-container {
