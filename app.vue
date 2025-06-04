@@ -1,34 +1,36 @@
 <template>
-  <div id="app">
-    <Bookshelf class="background" />
+  <NuxtLayout>
+    <!-- 你原本的背景與內容包在這裡也可以 -->
+    <!-- <Bookshelf class="background" /> -->
+
     <div class="content">
       <NuxtPage />
     </div>
-  </div>
+  </NuxtLayout>
 </template>
 
 <style scoped>
+/* 原本的樣式可以保留 */
+
 #app {
   position: relative;
   height: 100vh;
   width: 100vw;
-  overflow: hidden;
+  overflow: visible;
 }
 
-/* 背景書架樣式 */
 .background {
   position: fixed;
   top: 0;
   left: 0;
-  z-index: -1; /* 放在最底層 */
+  z-index: -1;
   height: 100vh;
   width: 100vw;
   overflow: hidden;
 }
 
-/* 分頁內容 */
 .content {
   position: relative;
-  z-index: 1; /* 確保內容顯示在書架之上 */
+  z-index: 1;
 }
 </style>
