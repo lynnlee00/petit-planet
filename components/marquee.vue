@@ -15,9 +15,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { db } from "~/utils/firebase";
+//import { db } from "~/utils/firebase";
 import { get, ref as dbRef } from "firebase/database";
+import { initFirebase } from '~/utils/firebase'
 
+const { db } = initFirebase()
 const marqueeMessages = ref([]);
 const currentMessage = ref({ message: "載入中...", category: "" });
 const currentBgColor = ref("#F5F5F5");

@@ -39,9 +39,11 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { db } from '~/utils/firebase';
+//import { db } from '~/utils/firebase';
 import { ref as dbRef, get } from 'firebase/database';
+import { initFirebase } from '~/utils/firebase'
 
+const { db } = initFirebase()
 const route = useRoute();
 const router = useRouter();
 const activity = ref(null);

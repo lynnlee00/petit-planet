@@ -97,9 +97,12 @@
 <script setup>
 import { ref } from 'vue';
 import { getDatabase, ref as dbRef, push } from 'firebase/database';
-import { app } from '~/utils/firebase';
+//import { app } from '~/utils/firebase';
+import { initFirebase } from '~/utils/firebase'
 
-const db = getDatabase(app);
+const { db } = initFirebase()
+
+// const db = getDatabase(app);
 
 const formType = ref('marquee'); // 預設為跑馬燈
 const loading = ref(false);

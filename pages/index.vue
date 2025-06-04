@@ -64,7 +64,10 @@ import { useState } from '#app';
 // ---------------------
 // 🔥 Firebase
 // ---------------------
-import { db } from '~/utils/firebase';
+// import { db } from '~/utils/firebase';
+import { initFirebase } from '~/utils/firebase'
+
+const { db } = initFirebase()
 import { ref as dbRef, get } from 'firebase/database';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 

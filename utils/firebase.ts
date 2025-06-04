@@ -1,19 +1,22 @@
-// utils/firebase.ts
-
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getDatabase } from "firebase/database";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAthVyMWUJm62AENokDtA9ASLJ2Pa5g7LM",
-  authDomain: "parent-kids-activities.firebaseapp.com",
-  databaseURL: "https://parent-kids-activities-default-rtdb.firebaseio.com",
-  projectId: "parent-kids-activities",
-  storageBucket: "parent-kids-activities.appspot.com",
-  messagingSenderId: "825321421988",
-  appId: "1:825321421988:web:5342ee333655e28d1e7a31",
-  measurementId: "G-0BKTVYLJER",
-};
+// ✅ 改成一個可重複使用的初始化函式
+export const initFirebase = () => {
+  const config = useRuntimeConfig().public
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-export { app, db };
+  const firebaseConfig = {
+    apiKey: config.firebaseApiKey,
+    authDomain: config.firebaseAuthDomain,
+    databaseURL: config.firebaseDatabaseUrl,
+    projectId: config.firebaseProjectId,
+    storageBucket: config.firebaseStorageBucket,
+    messagingSenderId: config.firebaseMessagingSenderId,
+    appId: config.firebaseAppId,
+  }
+
+  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
+  const db = getDatabase(app)
+
+  return { app, db }
+}
