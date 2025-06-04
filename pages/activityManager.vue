@@ -77,7 +77,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { db } from '~/utils/firebase';
+//import { db } from '~/utils/firebase';
+import { initFirebase } from '~/utils/firebase'
+
+const { db } = initFirebase()
 import { ref as dbRef, onValue, remove, update } from 'firebase/database';
 
 const activities = ref({});
