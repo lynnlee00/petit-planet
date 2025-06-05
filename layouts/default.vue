@@ -9,10 +9,24 @@
 
             <!-- 卡片類型切換 -->
             <div class="card-switch">
-                <button :class="{ active: currentType === 'activity' }" @click="switchType('activity')">手作玩樂</button>
-                <button :class="{ active: currentType === 'game' }" @click="switchType('game')">遊戲挑戰</button>
-                <button :class="{ active: currentType === 'buy' }" @click="switchType('buy')">購入材料包</button>
-                <button class="about-btn" @click="router.push('/about')">認識魔法師</button>
+                <button :class="{ active: currentType === 'activity' }" @click="switchType('activity')">
+                    <span class="full-text">手作玩樂</span>
+                    <span class="short-text">玩手作</span>
+                </button>
+                <button :class="{ active: currentType === 'game' }" @click="switchType('game')">
+                    <span class="full-text">遊戲挑戰</span>
+                    <span class="short-text">小遊戲</span>
+                </button>
+
+                <button :class="{ active: route.path === '/buy' }" @click="switchType('buy')">
+                    <span class="full-text">購入材料包</span>
+                    <span class="short-text">補補貨</span>
+                </button>
+
+                <button :class="['about-btn', { active: currentType === 'about' }]" @click="switchType('about')">
+                    <span class="full-text">認識魔法師</span>
+                    <span class="short-text">認識我</span>
+                </button>
             </div>
 
             <div class="slogan-box">
@@ -30,22 +44,32 @@
 
 <script setup>
 import { useState } from '#app'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 const currentType = useState('currentType', () => 'activity')
 
+watchEffect(() => {
+    const path = route.path
+    if (path === '/buy') currentType.value = 'buy'
+    else if (path === '/about') currentType.value = 'about'
+})
+
 const switchType = (type) => {
+    currentType.value = type
+
     if (type === 'buy') {
         router.push('/buy')
-        return
-    }
-
-    currentType.value = type
-    if (router.currentRoute.value.path !== '/') {
-        router.push('/')
+    } else if (type === 'about') {
+        router.push('/about')
+    } else {
+        if (router.currentRoute.value.path !== '/') {
+            router.push('/')
+        }
     }
 }
+
 </script>
 
 
@@ -56,9 +80,9 @@ const switchType = (type) => {
 }
 
 @media (max-width: 600px) {
-  ::v-deep(.slogan-box) {
-    display: none !important;
-  }
+    ::v-deep(.slogan-box) {
+        display: none !important;
+    }
 }
 
 .site-header {
@@ -82,6 +106,13 @@ const switchType = (type) => {
 
 .logo-wrapper:hover img {
     transform: scale(1.05);
+}
+
+.about-btn.active {
+    background: linear-gradient(to top, #ffe98e, #fff6cc);
+    color: #8a5a00;
+    border: 2px solid #e0b833;
+    box-shadow: 0 5px 0 #c89b1f;
 }
 
 .slogan-box {
@@ -275,6 +306,50 @@ const switchType = (type) => {
     .card-switch button {
         padding: 6px 18px;
         font-size: 14px;
+    }
+}
+
+/* 手機簡化文字顯示 */
+.short-text {
+    display: none;
+}
+
+.full-text {
+    display: inline;
+}
+
+@media (max-width: 480px) {
+    .short-text {
+        display: inline;
+    }
+
+    .logo-wrapper img {
+        max-height:30vw;
+        /* ✅ 放大 logo */
+    }
+
+    .logo-box {
+        padding-top: 4px;
+    }
+
+    .full-text {
+        display: none;
+    }
+
+    .card-switch {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .card-switch button {
+        flex: 0 0 42%;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+
+    .slogan-balloon {
+        font-size: 14px;
+        padding: 6px 10px;
     }
 }
 </style>

@@ -149,6 +149,29 @@ onMounted(async () => {
   }
 }
 
+@media (max-width: 420px) {
+  .marquee-container {
+    padding: 6px 12px;
+    height: auto;
+    border-radius: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    box-shadow: none;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 8px auto;
+    box-sizing: border-box;
+  }
+
+  .marquee-text {
+    font-size: 14px;
+    font-weight: normal;
+    text-align: left;
+    white-space: normal;
+    word-break: break-word;
+  }
+}
+
 .fade-in {
   opacity: 1;
   transition: opacity 0.5s ease-in;

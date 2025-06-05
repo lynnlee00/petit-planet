@@ -111,15 +111,24 @@ const currentType = useState('currentType'); // 共用的活動／遊戲切換�
 const activities = ref([]);
 const games = ref([]);
 const visibleActivities = ref([]);
-const loadCount = 6;
+// 預設載入數量會依螢幕寬度調整
+const loadCount = ref(6);
 
 const selectedTag = ref(null);
 const materialKeyword = ref("");
 const isMobile = ref(false);
 
+// 根據螢幕大小調整載入數量
 const updateIsMobile = () => {
-  isMobile.value = window.innerWidth <= 600;
-};
+  const width = window.innerWidth;
+  isMobile.value = width <= 600;
+  if (width > 960) {
+    loadCount.value = 8;
+  } else if (width > 600) {
+    loadCount.value = 6;
+  } else {
+    loadCount.value = 4;
+  }};
 
 const currentList = computed(() =>
   currentType.value === 'activity' ? activities.value : games.value
@@ -141,11 +150,11 @@ const uniqueTags = computed(() => {
 });
 
 const resetVisibleActivities = () => {
-  visibleActivities.value = filteredActivities.value.slice(0, loadCount);
+  visibleActivities.value = filteredActivities.value.slice(0, loadCount.value);
 };
 
 const loadMore = () => {
-  const nextLength = visibleActivities.value.length + loadCount;
+  const nextLength = visibleActivities.value.length + loadCount.value;
   visibleActivities.value = filteredActivities.value.slice(0, nextLength);
 };
 
@@ -224,16 +233,19 @@ watchEffect(() => {
 
 <style scoped>
 .container {
+  width: 100%;
+  max-width: 960px;
   margin: 0 auto;
-  padding: 10px 50px;
-  text-align: center;
+  padding: 10px 16px;
+  box-sizing: border-box;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 20px;
   margin-top: 20px;
+  justify-items: center;
 }
 
 .pagination {
@@ -338,6 +350,19 @@ watchEffect(() => {
   margin: 10px 0;
 }
 
+.ActivityCard {
+  width: 100%;
+  box-sizing: border-box; /* ✅ 確保 padding 不影響 width */
+  overflow: hidden; /* ✅ 防止內容溢出 */
+}
+
+.ActivityCard img {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-width: 100%;
+}
+
 .modal-content h2 {
   margin-top: 0;
   margin-bottom: 16px;
@@ -386,10 +411,9 @@ watchEffect(() => {
 }
 
 .image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transition: transform 0.5s ease-in-out;
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
 
 .image-container:hover .image {
