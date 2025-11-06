@@ -1,3 +1,4 @@
+<!-- activityFormAdd.vue -->
 <template>
   <form class="activity-form" @submit.prevent="handleSubmit">
     <h2>新增項目</h2>
@@ -65,7 +66,17 @@
         標籤（逗號分隔）
         <input v-model="form.tags" placeholder="感官遊戲, 創意勞作..." />
       </label>
+<!-- 是否公開 -->
+<div class="checkbox-group">
+  <label for="release-checkbox">是否公開（isRelease）：</label>
+  <input id="release-checkbox" type="checkbox" v-model="form.isRelease" />
+</div>
 
+<!-- 上架日期 -->
+<label>
+  上架日期（releaseDate）：
+  <input type="date" v-model="form.releaseDate" />
+</label>
       <label v-if="formType === 'game'">
         小遊戲路徑（例如 /game/drag-trash）
         <input v-model="form.path" />
@@ -121,24 +132,28 @@ const form = ref({
   path: '',
   marqueeMessage: '',
   category: '',
+    isRelease: false,         // ✅ 新增欄位
+  releaseDate: '',          // ✅ 新增欄位
 });
 
 const handleSubmit = async () => {
   loading.value = true;
   try {
     if (formType.value === 'activity' || formType.value === 'game') {
-      const newData = {
-        title: form.value.title,
-        description: form.value.description,
-        image: form.value.image || '',
-        resultImg1: form.value.resultImg1 || '',
-        resultImg2: form.value.resultImg2 || '',
-        materials: form.value.materials,
-        steps: form.value.steps,
-        age: form.value.age,
-        tags: form.value.tags.split(',').map(t => t.trim()),
-        createdAt: Date.now(),
-      };
+const newData = {
+  title: form.value.title,
+  description: form.value.description,
+  image: form.value.image || '',
+  resultImg1: form.value.resultImg1 || '',
+  resultImg2: form.value.resultImg2 || '',
+  materials: form.value.materials,
+  steps: form.value.steps,
+  age: form.value.age,
+  tags: form.value.tags.split(',').map(t => t.trim()),
+  isRelease: !!form.value.isRelease,
+  releaseDate: form.value.releaseDate || new Date().toISOString().split('T')[0], // 預設為今天
+  createdAt: Date.now(),
+};
 
       if (formType.value === 'game') {
         newData.path = form.value.path || '';
@@ -172,6 +187,8 @@ const handleSubmit = async () => {
       path: '',
       marqueeMessage: '',
       category: '',
+        isRelease: false,
+  releaseDate: '',
     };
   } catch (e) {
     console.error('寫入失敗：', e);
@@ -231,4 +248,17 @@ button:disabled {
 .switch-form {
   margin-bottom: 20px;
 }
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.checkbox-group label {
+  font-weight: bold;
+  color: #004080;
+}
+
 </style>

@@ -1,6 +1,10 @@
 <template>
   <div class="rhythm-trainer">
-    <h2>🎵 跟著音樂動一動</h2>
+    <div class="title-with-help">
+      <h2>🎵 跟著音樂動一動 </h2>
+      <button @click="showInfo = true" class="inline-help-button"> 玩法說明</button>
+    </div>
+
     <p v-if="isPlaying" style="font-size: 18px; margin-bottom: 10px;">⏱️ 已經播放：{{ elapsedTime }} 秒</p>
 
     <!-- 倒數提示 -->
@@ -39,7 +43,7 @@
       <label>難易度：</label>
       <select v-model="selectedDifficulty" class="cute-select">
         <option value="easy">簡單</option>
-        <option value="normal">正常</option>
+        <option value="normal">隨機</option>
         <option value="fixed">固定</option>
       </select>
     </div>
@@ -73,7 +77,31 @@
     </transition>
 
   </div>
+  <!-- ✅ 說明按鈕浮動區 -->
+  <!-- <div class="info-button-container">
+    <button @click="showInfo = true" class="info-button">❓ 說明</button>
+  </div> -->
 
+  <!-- ✅ 說明彈跳視窗 -->
+  <transition name="fade-zoom">
+    <div v-if="showInfo" class="info-modal" @click.self="showInfo = false">
+      <div class="info-content" @click.stop>
+        <h3>🎵 怎麼玩這個節奏遊戲？</h3>
+        <p>這是一款適合親子共玩的節奏練習小遊戲 ✨</p>
+        <ul>
+          <li>選好 <strong>音樂</strong>、<strong>圖卡類型</strong> 和 <strong>難易度</strong></li>
+          <li>按下 <strong>「開始」</strong>，畫面會依節奏閃爍圖卡</li>
+          <li>跟著圖卡拍手、做動作或數拍子，訓練節奏感 💃🕺</li>
+          <li><strong>簡單模式</strong> 適合初學，<strong>固定模式</strong> 則有設計好的節奏組</li>
+        </ul>
+        <p style="font-size: 14px; color: #666;">👨‍👩‍👧‍👦 建議一起玩，互動更有趣！</p>
+        <p style="font-size: 14px; color: #666;">💡 想看更多玩法？可到 YouTube 搜尋「節奏遊戲」喔～</p>
+        <div style="text-align: center; margin-top: 20px;">
+          <button @click="showInfo = false" class="close-button">關閉</button>
+        </div>
+      </div>
+    </div>
+  </transition>
 </template>
 
 <script setup>
@@ -103,8 +131,8 @@ const musicTracks = [
 
 const isPlaying = ref(false);
 const selectedTrack = ref(musicTracks[0]);
-const selectedImageType = ref('note');
-const selectedDifficulty = ref('normal');
+const selectedImageType = ref('action');
+const selectedDifficulty = ref('fixed');
 const displayItems = ref([]);
 const flashingIndex = ref(null);
 const countdown = ref(0);
@@ -303,6 +331,9 @@ function stopGame() {
 
 const showCompletion = ref(false);
 const completionImage = '/images/game/rhythm/congrats.png';
+
+const showInfo = ref(false);
+
 
 </script>
 
@@ -526,6 +557,125 @@ button:disabled {
 
 .fade-zoom-enter-active {
   animation: fadeZoomIn 0.6s ease-out forwards;
+}
+
+.circle-help-button {
+  background-color: #fff0f5;
+  color: #d63384;
+  border: 2px solid #ffb6c1;
+  font-weight: bold;
+  font-size: 18px;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  vertical-align: middle;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.circle-help-button:hover {
+  transform: scale(1.1);
+  background-color: #ffe4e9;
+}
+
+.info-button-container {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 999;
+}
+
+.info-button {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 2px solid #ffeeba;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.2s ease;
+}
+
+.info-button:hover {
+  background-color: #ffec99;
+}
+
+.info-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.info-content {
+  background-color: #fffef6;
+  border-radius: 20px;
+  padding: 24px 28px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.2);
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.info-content h3 {
+  margin-top: 0;
+  color: #ff84a8;
+  font-weight: bold;
+}
+
+.info-content ul {
+  padding-left: 20px;
+  margin: 12px 0;
+}
+
+.close-button {
+  background-color: #ffc0cb;
+  color: white;
+  font-weight: bold;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.close-button:hover {
+  background-color: #ff94b6;
+}
+
+.title-with-help {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.inline-help-button {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 2px solid #ffeeba;
+  border-radius: 12px;
+  padding: 4px 10px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.2s;
+}
+
+.inline-help-button:hover {
+  background-color: #ffeeb5;
 }
 
 @keyframes fadeZoomIn {

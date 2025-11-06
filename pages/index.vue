@@ -1,10 +1,10 @@
 <template>
   <section class="container">
     <!-- 登入 -->
-    <div class="login-logout-link">
+    <!-- <div class="login-logout-link">
       <button v-if="!isLoggedIn" @click="goLogin" class="login-button">管理員登入</button>
       <button v-else @click="logout" class="logout-button">登出</button>
-    </div>
+    </div> -->
     <!-- 跑馬燈 -->
     <Marquee />
 
@@ -19,8 +19,18 @@
 
     <!-- 搜尋 -->
     <div class="material-search">
-      <input type="text" v-model="materialKeyword" placeholder="🪄 揮揮魔杖，召喚你的材料吧！例如：筆" class="material-input" />
-      <button v-if="materialKeyword" @click="materialKeyword = ''" class="clear-btn">✨ 消除咒語</button>
+      <input type="text" v-model="newKeyword" placeholder="🪄 可輸入多個材料，以 Enter 新增" class="material-input"
+        @keyup.enter="addKeyword" />
+      <button v-if="newKeyword" @click="addKeyword" class="clear-btn">＋加入</button>
+    </div>
+
+    <!-- 顯示搜尋標籤 -->
+    <div v-if="searchKeywords.length" class="keyword-tags">
+      <span v-for="(word, index) in searchKeywords" :key="index" class="keyword-tag">
+        {{ word }}
+        <button class="remove-tag" @click="removeKeyword(index)">×</button>
+      </span>
+      <button class="clear-all" @click="clearAllKeywords">清除全部</button>
     </div>
 
     <!-- 卡片列表 -->
@@ -30,7 +40,11 @@
     </div>
 
     <!-- 無資料提示 -->
-    <div v-else class="no-result">很抱歉，找不到符合條件的活動 😢</div>
+    <!-- 無資料提示 -->
+    <div v-else class="no-result">
+      噢不～沒有符合的活動 💦<br />
+      <span class="hint">可能是還在準備中，敬請期待 ✨</span>
+    </div>
 
     <!-- 載入更多 -->
     <div v-if="hasMore" class="pagination">
@@ -54,32 +68,16 @@
 </template>
 
 <script setup>
-// ---------------------
-// 📚 Vue 官方組件
-// ---------------------
 import { ref, computed, onMounted, onUnmounted, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import { useState } from '#app';
-
-// ---------------------
-// 🔥 Firebase
-// ---------------------
-// import { db } from '~/utils/firebase';
 import { initFirebase } from '~/utils/firebase'
-
 const { db } = initFirebase()
 import { ref as dbRef, get } from 'firebase/database';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-
-// ---------------------
-// 🎨 自己的元件
-// ---------------------
 import ActivityCard from '~/components/activityCard.vue';
 import Marquee from '~/components/marquee.vue';
 
-// ---------------------
-// 🧩 基本變數設定
-// ---------------------
 const router = useRouter();
 const auth = getAuth();
 const isClient = typeof window !== 'undefined';
@@ -91,14 +89,15 @@ const isLoggedIn = ref(false);
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
-    isLoggedIn.value = !!user;
+    if (user) {
+      isLoggedIn.value = true;
+    } else {
+      isLoggedIn.value = false;
+    }
   });
 });
 
-const goLogin = () => {
-  router.push('/login');
-};
-
+const goLogin = () => router.push('/login');
 const logout = async () => {
   await signOut(auth);
   router.push('/');
@@ -107,40 +106,64 @@ const logout = async () => {
 // ---------------------
 // 🎈 活動與遊戲資料管理
 // ---------------------
-const currentType = useState('currentType'); // 共用的活動／遊戲切換狀態
+const currentType = useState('currentType');
+const selectedTag = useState('selectedTag', () => null);
 const activities = ref([]);
 const games = ref([]);
 const visibleActivities = ref([]);
-// 預設載入數量會依螢幕寬度調整
 const loadCount = ref(6);
-
-const selectedTag = ref(null);
-const materialKeyword = ref("");
 const isMobile = ref(false);
 
-// 根據螢幕大小調整載入數量
 const updateIsMobile = () => {
   const width = window.innerWidth;
   isMobile.value = width <= 600;
-  if (width > 960) {
-    loadCount.value = 8;
-  } else if (width > 600) {
-    loadCount.value = 6;
-  } else {
-    loadCount.value = 4;
-  }};
+  if (width > 960) loadCount.value = 8;
+  else if (width > 600) loadCount.value = 6;
+  else loadCount.value = 4;
+};
 
 const currentList = computed(() =>
   currentType.value === 'activity' ? activities.value : games.value
 );
 
+// ---------------------
+// 🔍 多關鍵字搜尋邏輯
+// ---------------------
+const searchKeywords = ref([]); // 儲存多筆關鍵字
+const newKeyword = ref(""); // 輸入框文字
+
+const addKeyword = () => {
+  const trimmed = newKeyword.value.trim();
+  if (trimmed && !searchKeywords.value.includes(trimmed)) {
+    searchKeywords.value.push(trimmed);
+  }
+  newKeyword.value = "";
+};
+
+const removeKeyword = (index) => {
+  searchKeywords.value.splice(index, 1);
+};
+
+const clearAllKeywords = () => {
+  searchKeywords.value = [];
+};
+
+// ---------------------
+// 🎯 篩選條件整合
+// ---------------------
 const filteredActivities = computed(() => {
+  const today = new Date().toISOString().slice(0, 10);
   return currentList.value.filter((item) => {
+    const isReleased = item.isRelease && (!item.releaseDate || item.releaseDate <= today);
     const matchTag = selectedTag.value ? item.tags?.includes(selectedTag.value) : true;
-    const matchKeyword = materialKeyword.value
-      ? item.materials?.toLowerCase().includes(materialKeyword.value.toLowerCase())
+
+    // ✅ 多關鍵字 AND 搜尋
+    const materialText = (item.materials || "").toLowerCase();
+    const matchKeyword = searchKeywords.value.length
+      ? searchKeywords.value.every(k => materialText.includes(k.toLowerCase()))
       : true;
-    return matchTag && matchKeyword;
+
+    return isReleased && matchTag && matchKeyword;
   });
 });
 
@@ -161,33 +184,28 @@ const loadMore = () => {
 const hasMore = computed(() => visibleActivities.value.length < filteredActivities.value.length);
 
 // ---------------------
-// 🎯 點擊卡片打開活動或遊戲
+// 🎯 點擊卡片
 // ---------------------
 const openModal = (item) => {
-  if (currentType.value === 'activity') {
-    router.push(`/activityDetail?id=${item.id}`);
-  } else if (item.path) {
-    router.push(item.path);
-  } else {
-    alert("找不到這個遊戲的路徑 🙈");
-  }
+  if (currentType.value === 'activity') router.push(`/activityDetail?id=${item.id}`);
+  else if (item.path) router.push(item.path);
+  else alert("找不到這個遊戲的路徑 🙈");
 };
 
 // ---------------------
-// 🎨 Tag 選單與材料搜尋
+// 🎨 Tag 選單
 // ---------------------
 const filterByTag = (tag) => {
   selectedTag.value = selectedTag.value === tag ? null : tag;
   resetVisibleActivities();
 };
-
 const resetTag = () => {
   selectedTag.value = null;
   resetVisibleActivities();
 };
 
 // ---------------------
-// 🚀 首頁初始化載入
+// 🚀 初始化
 // ---------------------
 onMounted(async () => {
   if (isClient) {
@@ -201,34 +219,22 @@ onMounted(async () => {
   ]);
 
   if (activitySnap.exists()) {
-    activities.value = Object.entries(activitySnap.val()).map(([id, val]) => ({
-      id,
-      ...val
-    }));
+    activities.value = Object.entries(activitySnap.val()).map(([id, val]) => ({ id, ...val }));
+  }
+  if (gameSnap.exists()) {
+    games.value = Object.entries(gameSnap.val()).map(([id, val]) => ({ id, ...val }));
   }
 
-  if (gameSnap.exists()) {
-    games.value = Object.entries(gameSnap.val()).map(([id, val]) => ({
-      id,
-      ...val
-    }));
-  }
   resetVisibleActivities();
 });
 
 onUnmounted(() => {
-  if (isClient) {
-    window.removeEventListener('resize', updateIsMobile);
-  }
+  if (isClient) window.removeEventListener('resize', updateIsMobile);
 });
 
-// ---------------------
-// 🔄 監聽篩選條件變化時，重置可見列表
-// ---------------------
-watchEffect(() => {
-  resetVisibleActivities();
-});
+watchEffect(() => resetVisibleActivities());
 </script>
+
 
 
 <style scoped>
@@ -352,8 +358,10 @@ watchEffect(() => {
 
 .ActivityCard {
   width: 100%;
-  box-sizing: border-box; /* ✅ 確保 padding 不影響 width */
-  overflow: hidden; /* ✅ 防止內容溢出 */
+  box-sizing: border-box;
+  /* ✅ 確保 padding 不影響 width */
+  overflow: hidden;
+  /* ✅ 防止內容溢出 */
 }
 
 .ActivityCard img {
@@ -580,5 +588,65 @@ watchEffect(() => {
 
 .edit-button:hover {
   background-color: #ff6ab1;
+}
+
+.keyword-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.keyword-tag {
+  background-color: #ffe8f1;
+  border: 2px solid #ffb6d9;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-weight: bold;
+  color: #d0006f;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  animation: popIn 0.2s ease-in-out;
+}
+
+.remove-tag {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #d0006f;
+  font-weight: bold;
+}
+
+.clear-all {
+  background-color: #f0f0f0;
+  border: 2px dashed #ccc;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #666;
+  transition: 0.2s;
+}
+
+.clear-all:hover {
+  background-color: #ffe4f2;
+  border-color: #ffa8d0;
+  color: #d0006f;
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 </style>

@@ -16,6 +16,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth'
 
+import { initFirebase } from '~/utils/firebase'
+initFirebase() 
+
 import ActivityForm from '~/pages/activityFormAdd.vue'
 import ActivityManager from '~/pages/activityManager.vue'
 

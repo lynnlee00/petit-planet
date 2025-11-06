@@ -35,21 +35,51 @@
     <div v-if="isEditing" class="edit-form">
       <h3>編輯{{ editingType === 'game' ? '小遊戲' : '活動' }}</h3>
       <form @submit.prevent="updateItem">
+        <label>標題：</label>
         <input v-model="currentItem.title" placeholder="標題" required />
+
+        <label>描述：</label>
         <input v-model="currentItem.description" placeholder="描述" required />
-        <!-- <input v-model="currentItem.materials" placeholder="材料" /> -->
-        <textarea v-model="currentItem.materials" placeholder="材料（可換行）" rows="4" style="width: 100%;"></textarea>
-        <textarea v-model="currentItem.steps" placeholder="步驟（可換行）" rows="6" style="width: 100%;"></textarea>
+
+        <label>材料（可換行）：</label>
+        <textarea v-model="currentItem.materials" rows="4" style="width: 100%;"></textarea>
+
+        <label>步驟（可換行）：</label>
+        <textarea v-model="currentItem.steps" rows="6" style="width: 100%;"></textarea>
+
+        <label>適合年齡：</label>
         <input v-model="currentItem.age" placeholder="適合年齡" />
+
+        <label>分類 Tags（用逗號分隔）：</label>
         <input v-model="currentItem.tags" placeholder="Tags (用逗號分隔)" />
+
+        <label>主圖圖片 URL：</label>
         <input v-model="currentItem.image" placeholder="圖片URL" />
+
+        <label>成品照片連結（1）：</label>
         <input v-model="currentItem.resultImg1" placeholder="成品照片連結（1）" />
+
+        <label>成品照片連結（2）：</label>
         <input v-model="currentItem.resultImg2" placeholder="成品照片連結（2）" />
-        <input v-if="editingType === 'game'" v-model="currentItem.path" placeholder="遊戲路徑（/game/...）" />
+
+        <div v-if="editingType === 'game'">
+          <label>遊戲路徑（/game/...）：</label>
+          <input v-model="currentItem.path" placeholder="遊戲路徑（/game/...）" />
+        </div>
+
+        <div class="form-group checkbox-group">
+          <label for="release-checkbox">是否公開（isRelease）：</label>
+          <input id="release-checkbox" type="checkbox" v-model="currentItem.isRelease" />
+        </div>
+
+        <label>上架日期（releaseDate）：</label>
+        <input v-model="currentItem.releaseDate" type="date" />
+
         <button type="submit">更新</button>
         <button type="button" @click="cancelEdit">取消</button>
       </form>
     </div>
+
 
     <!-- 跑馬燈訊息管理 -->
     <div class="marquee-manager">
@@ -77,10 +107,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-//import { db } from '~/utils/firebase';
+//import { db } from '~/utils/firebase'
 import { initFirebase } from '~/utils/firebase'
 
-const { db } = initFirebase()
+// const { db } = initFirebase()
+let db = null
+
 import { ref as dbRef, onValue, remove, update } from 'firebase/database';
 
 const activities = ref({});
@@ -91,6 +123,8 @@ const currentItem = ref({});
 const editingType = ref('activity');
 
 onMounted(() => {
+  db = initFirebase().db;
+
   onValue(dbRef(db, 'activities'), (snapshot) => {
     activities.value = snapshot.val() || {};
   });
@@ -117,12 +151,38 @@ const cancelEdit = () => {
 };
 
 const updateItem = async () => {
-  const { id, ...data } = currentItem.value;
   const type = editingType.value;
+  const id = currentItem.value.id;
+
+  const data = {
+    title: currentItem.value.title,
+    description: currentItem.value.description,
+    materials: currentItem.value.materials || '',
+    steps: currentItem.value.steps || '',
+    age: currentItem.value.age || '',
+    tags: currentItem.value.tags || '',
+    image: currentItem.value.image || '',
+    resultImg1: currentItem.value.resultImg1 || '',
+    resultImg2: currentItem.value.resultImg2 || '',
+    isRelease: !!currentItem.value.isRelease,
+    releaseDate: currentItem.value.releaseDate || '',
+  };
+
+  if (type === 'game') {
+    data.path = currentItem.value.path || '';
+  }
+
+  // ✅ 加入 console 看你實際送什麼
+  console.log('📝 即將更新的資料：', data);
+
   if (confirm(`確定要更新這個${type === 'game' ? '遊戲' : '勞作'}嗎？`)) {
-    await update(dbRef(db, `${type === 'game' ? 'games' : 'activities'}/${id}`), data);
-    alert(`${type === 'game' ? '遊戲' : '勞作'}更新成功`);
-    cancelEdit();
+    try {
+      await update(dbRef(db, `${type === 'game' ? 'games' : 'activities'}/${id}`), data);
+      alert(`${type === 'game' ? '遊戲' : '勞作'}更新成功`);
+      cancelEdit();
+    } catch (err) {
+      console.error('❌ 更新失敗：', err);
+    }
   }
 };
 
@@ -150,6 +210,15 @@ const deleteMarqueeMessage = async (id) => {
 </script>
 
 <style scoped>
+.edit-form label {
+  display: block;
+  text-align: left;
+  font-weight: bold;
+  color: #004080;
+  /* 深藍色 */
+  margin: 12px 0 4px;
+}
+
 .activity-manager {
   max-width: 800px;
   margin: 40px auto;
@@ -197,6 +266,19 @@ const deleteMarqueeMessage = async (id) => {
   margin-bottom: 12px;
   border: 1px solid #ddd;
   border-radius: 6px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.checkbox-group label {
+  font-weight: bold;
+  color: #004080;
+  margin-bottom: 0;
 }
 
 button {

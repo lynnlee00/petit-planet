@@ -20,7 +20,7 @@
 
                 <button :class="{ active: route.path === '/buy' }" @click="switchType('buy')">
                     <span class="full-text">購入材料包</span>
-                    <span class="short-text">補補貨</span>
+                    <span class="short-text">購物區</span>
                 </button>
 
                 <button :class="['about-btn', { active: currentType === 'about' }]" @click="switchType('about')">
@@ -31,8 +31,10 @@
 
             <div class="slogan-box">
                 <div class="slogan-balloon">
-                    🐰 魔法星球 每週六｜手作週更 × 遊戲雙週更
+                    <span class="secret-bunny" @click="goSecret" title="管理入口">🐰</span>
+                    魔法星球 每週六｜手作週更 × 遊戲雙週更
                 </div>
+                <div class="beta-status">🚀 封測 ing 中，歡迎體驗給建議！</div>
             </div>
         </header>
 
@@ -45,19 +47,25 @@
 <script setup>
 import { useState } from '#app'
 import { useRouter, useRoute } from 'vue-router'
+import { getAuth } from 'firebase/auth'
 
 const router = useRouter()
 const route = useRoute()
 const currentType = useState('currentType', () => 'activity')
 
+const selectedTag = useState('selectedTag', () => null) 
+
+// 🔁 依路由更新 currentType
 watchEffect(() => {
     const path = route.path
     if (path === '/buy') currentType.value = 'buy'
     else if (path === '/about') currentType.value = 'about'
 })
 
+// 🔁 切換活動 / 關於我們 / 購買頁
 const switchType = (type) => {
     currentType.value = type
+    selectedTag.value = null // ⭐ 清空 tag
 
     if (type === 'buy') {
         router.push('/buy')
@@ -70,10 +78,28 @@ const switchType = (type) => {
     }
 }
 
+// 🐰 秘密後台入口：已登入進後台，未登入進 login
+const goSecret = () => {
+    const auth = getAuth()
+    const user = auth.currentUser
+    if (user) {
+        router.push('/activityFormPage')
+    } else {
+        router.push('/login')
+    }
+}
 </script>
 
 
+
 <style scoped>
+.beta-status {
+    color: #e74c3c;
+    font-weight: bold;
+    margin-top: 4px;
+    font-size: 0.9rem;
+}
+
 .logo-box {
     display: flex;
     align-items: center;
@@ -324,7 +350,7 @@ const switchType = (type) => {
     }
 
     .logo-wrapper img {
-        max-height:30vw;
+        max-height: 30vw;
         /* ✅ 放大 logo */
     }
 

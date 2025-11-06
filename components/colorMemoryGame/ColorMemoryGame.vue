@@ -1,6 +1,14 @@
 <template>
     <div class="color-game">
-        <h2>🎨 顏色記憶挑戰</h2>
+        <div class="title-with-info">
+            <h2>🎨 顏色記憶挑戰</h2>
+            <button class="info-btn" @click="showInfo = true">玩法說明</button>
+        </div>
+        <!-- <h2>🎨 顏色記憶挑戰</h2>
+       <button @click="showInfo = true" class="inline-help-button"> 玩法說明</button>
+        <button class="info-btn" @click="showInfo = true"> 玩法說明</button> -->
+
+
         <p class="sub-title">✨ 請記住顏色出現的順序！✨</p>
 
         <div class="controls">
@@ -69,6 +77,24 @@
 
         <p v-if="result" class="result">{{ result }}</p>
     </div>
+
+    <!-- 說明彈跳視窗 -->
+<transition name="fade-zoom">
+  <div v-if="showInfo" class="info-modal" @click.self="showInfo = false">
+    <div class="info-content">
+      <h3>🧠 遊戲說明</h3>
+      <p>這是一款訓練記憶力的小遊戲，可以選擇記住一串顏色的「順序」或「位置」。</p>
+      <ul>
+        <li><strong>記住整組順序：</strong>依照剛剛看到的顏色排列順序答題。</li>
+        <li><strong>記住第幾個顏色：</strong>題目會問「第幾個顏色是什麼？」</li>
+        <li>可自由選擇顏色風格、顏色數量與播放間隔。</li>
+        <li>挑戰成功後會有閃亮閃亮的效果唷 ✨</li>
+      </ul>
+      <button class="close-btn" @click="showInfo = false">關閉</button>
+    </div>
+  </div>
+</transition>
+
 </template>
 
 <script setup>
@@ -205,6 +231,8 @@ const checkAnswer = (selected) => {
         isWrong.value = false
     }, 1000)
 }
+
+const showInfo = ref(false)
 </script>
 
 <style scoped>
@@ -339,6 +367,76 @@ const checkAnswer = (selected) => {
     font-size: 1.2rem;
     font-weight: bold;
     color: #4e4e4e;
+}
+
+.info-btn {
+    background-color: #fff2ac;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    transition: background-color 0.2s;
+}
+
+.info-btn:hover {
+    background-color: #ffe066;
+}
+
+.info-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+
+.info-content {
+    background: white;
+    padding: 24px;
+    border-radius: 16px;
+    max-width: 400px;
+    text-align: left;
+    font-size: 1rem;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.2);
+}
+
+.info-content ul {
+    padding-left: 20px;
+    margin-top: 10px;
+}
+
+.close-btn {
+  display: block;
+  margin: 20px auto 0;
+  padding: 6px 16px;
+  border: none;
+  background: #f8bebe;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  transition: background 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f28989;
+  color: white;
+}
+
+.title-with-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 @keyframes shake {
