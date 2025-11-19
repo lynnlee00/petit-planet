@@ -8,27 +8,34 @@ declare global {
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const GA_ID = 'G-R69SYSG7DD' // ← 換成你的 GA4 測量 ID
+  const GA_ID = 'G-R69SYSG7DD'
 
   if (process.client) {
-    // 動態載入 GA 腳本
+    console.log('✅ GA plugin loaded')
+
     const script = document.createElement('script')
     script.async = true
     script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`
+    script.onload = () => console.log('✅ GA script loaded')
     document.head.appendChild(script)
 
-    // 初始化 gtag
     window.dataLayer = window.dataLayer || []
     function gtag(...args: any[]) {
+      console.log('📡 GA event:', args)
       window.dataLayer.push(args)
     }
 
     gtag('js', new Date())
     gtag('config', GA_ID)
 
-    // ✅ 明確指定 router 型別
-    const router = nuxtApp.$router as Router
+    // ✅ 立即上報首頁
+    gtag('event', 'page_view', {
+      page_path: window.location.pathname,
+      page_title: document.title,
+    })
 
+    // ✅ 監聽頁面切換
+    const router = nuxtApp.$router as Router
     router.afterEach((to) => {
       gtag('event', 'page_view', {
         page_path: to.fullPath,

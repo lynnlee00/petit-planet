@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   css: [
     '~/assets/css/global.css'
   ],
+
   app: {
     head: {
       title: 'I人媽媽の小手作星球',
@@ -23,7 +24,22 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/favicon.png' }
+      ],
+      script: [
+        {
+          src: "https://www.googletagmanager.com/gtag/js?id=G-R69SYS7DD",
+          async: true
+        },
+        {
+          children: `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-R69SYS7DD');
+    `
+        }
       ]
+
     }
   }
 })
