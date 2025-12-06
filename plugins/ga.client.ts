@@ -8,7 +8,7 @@ declare global {
 }
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const GA_ID = 'G-R69SYSG7DD'
+  const GA_ID = 'G-R69SYS7DD'
 
   if (process.client) {
     console.log('✅ GA plugin loaded')
@@ -22,7 +22,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     window.dataLayer = window.dataLayer || []
     function gtag(...args: any[]) {
       console.log('📡 GA event:', args)
-      window.dataLayer.push(args)
+      window.dataLayer.push(arguments)
     }
 
     gtag('js', new Date())
