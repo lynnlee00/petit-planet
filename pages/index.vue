@@ -40,7 +40,6 @@
     </div>
 
     <!-- 無資料提示 -->
-    <!-- 無資料提示 -->
     <div v-else class="no-result">
       噢不～沒有符合的活動 💦<br />
       <span class="hint">可能是還在準備中，敬請期待 ✨</span>
@@ -48,9 +47,16 @@
 
     <!-- 載入更多 -->
     <div v-if="hasMore" class="pagination">
-      <button @click="loadMore" class="page-button" :class="{ bounce: hasMore }">
-        載入更多
-      </button>
+      <div class="load-more-banner">
+        <span class="sparkle">✨</span>
+        <div class="banner-text">
+          <p class="banner-title">向下探索更多靈感 </p>
+        </div>
+        
+        <button @click="loadMore" class="page-button" :class="{ bounce: hasMore }">
+          <span class="arrow">⬇</span> 載入更多
+        </button>
+      </div>
     </div>
 
     <p>&nbsp;</p> <!-- 空一格 -->
@@ -122,8 +128,24 @@ const updateIsMobile = () => {
   else loadCount.value = 4;
 };
 
+const toTimestamp = (value) => {
+  if (!value) return 0;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+};
+
+const sortByNewest = (list) =>
+  list.slice().sort((a, b) => {
+    const timeA = toTimestamp(a.releaseDate) || toTimestamp(a.createdAt);
+    const timeB = toTimestamp(b.releaseDate) || toTimestamp(b.createdAt);
+    return timeB - timeA;
+  });
+
+const sortedActivities = computed(() => sortByNewest(activities.value));
+const sortedGames = computed(() => sortByNewest(games.value));
+
 const currentList = computed(() =>
-  currentType.value === 'activity' ? activities.value : games.value
+  currentType.value === 'activity' ? sortedActivities.value : sortedGames.value
 );
 
 // ---------------------
@@ -258,27 +280,60 @@ watchEffect(() => resetVisibleActivities());
   margin-top: 30px;
   display: flex;
   justify-content: center;
-  gap: 20px;
+}
+
+.load-more-banner {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(120deg, #ffe6f4 0%, #fff8e1 100%);
+  border: 3px solid #ffb6d9;
+  border-radius: 22px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 6px 0 #ff9ec9;
+  animation: bannerFloat 3s ease-in-out infinite;
+}
+
+.sparkle {
+  font-size: 28px;
+}
+
+.banner-text {
+  flex: 1;
+}
+
+.banner-title {
+  margin: 0;
+  font-weight: 700;
+  color: #d0006f;
+}
+
+.banner-sub {
+  margin: 0;
+  color: #8a4a8f;
+  font-size: 14px;
 }
 
 .page-button {
-  background: linear-gradient(145deg, #d6f5e3, #e4f9ec);
-  /* 淡綠色漸層 */
-  color: #2b7a4b;
-  border: 3px solid #a7e4c2;
-  border-radius: 20px;
-  padding: 12px 24px;
-  font-size: 18px;
+  background: #fff;
+  color: #d0006f;
+  border: 3px dashed #d0006f;
+  border-radius: 999px;
+  padding: 10px 22px;
+  font-size: 16px;
   font-weight: bold;
   cursor: pointer;
-  box-shadow: 0 4px 0 #8fd7b2;
-  transition: all 0.2s ease-in-out;
+  box-shadow: 0 4px 0 #ff9ec9;
+  transition: transform 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .page-button:hover {
-  background: linear-gradient(145deg, #c9f0dd, #d9f6e9);
-  transform: scale(1.05);
-  box-shadow: 0 6px 0 #7ed3a6;
+  transform: scale(1.08);
 }
 
 .page-button:disabled {
@@ -287,6 +342,20 @@ watchEffect(() => resetVisibleActivities());
   border: 3px dashed #ccc;
   box-shadow: none;
   cursor: not-allowed;
+}
+
+@keyframes bannerFloat {
+  0% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(6px);
+  }
+
+  100% {
+    transform: translateY(0);
+  }
 }
 
 .tag-filter {

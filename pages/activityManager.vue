@@ -11,6 +11,7 @@
 
         <img :src="activity.image" alt="活動圖片" class="activity-image" />
         <div class="activity-info">
+          <button @click="previewItem(id, 'activity')" class="preview-button">預覽</button>
           <button @click="editItem(id, 'activity')">編輯</button>
           <button class="delete-button" @click="deleteItem(id, 'activity')">刪除</button>
         </div>
@@ -25,6 +26,7 @@
 
         <img :src="game.image" alt="遊戲圖片" class="activity-image" />
         <div class="activity-info">
+          <button @click="previewItem(id, 'game')" class="preview-button">預覽</button>
           <button @click="editItem(id, 'game')">編輯</button>
           <button class="delete-button" @click="deleteItem(id, 'game')">刪除</button>
         </div>
@@ -107,6 +109,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 //import { db } from '~/utils/firebase'
 import { initFirebase } from '~/utils/firebase'
 
@@ -121,6 +124,7 @@ const marqueeMessages = ref({});
 const isEditing = ref(false);
 const currentItem = ref({});
 const editingType = ref('activity');
+const router = useRouter();
 
 onMounted(() => {
   db = initFirebase().db;
@@ -193,6 +197,24 @@ const deleteItem = async (id, type) => {
   }
 };
 
+const previewItem = (id, type) => {
+  const source = type === 'activity' ? activities.value : games.value;
+  const item = source?.[id];
+  if (!item) return;
+
+  if (type === 'activity') {
+    const url = router.resolve({ path: '/activityDetail', query: { id, preview: '1' } }).href;
+    window.open(url, '_blank');
+  } else if (item.path) {
+    const url = item.path.startsWith('http')
+      ? item.path
+      : router.resolve(item.path).href;
+    window.open(url, '_blank');
+  } else {
+    alert('這個遊戲還沒有設定路徑，請先補上 path。');
+  }
+};
+
 const updateMarqueeMessage = async (id) => {
   const updatedMessage = marqueeMessages.value[id];
   await update(dbRef(db, `marqueeMessages/${id}`), {
@@ -249,7 +271,13 @@ const deleteMarqueeMessage = async (id) => {
 
 .activity-info {
   flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 10px;
 }
+
 
 .edit-form {
   margin-top: 20px;
@@ -292,6 +320,12 @@ button {
 
 button:disabled {
   background-color: #aaa;
+}
+
+button.preview-button {
+  background: linear-gradient(145deg, #e0f7fa, #c2e9fb);
+  color: #006064;
+  border: 2px dashed #4dd0e1;
 }
 
 .delete-button {
