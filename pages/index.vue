@@ -62,6 +62,13 @@
     <p>&nbsp;</p> <!-- 空一格 -->
     <p>&nbsp;</p> <!-- 空一格 -->
 
+    <footer class="home-footer">
+      <div class="footer-card">
+        <p class="footer-title">手作收藏夾</p>
+        <p class="footer-count">小手作星球已收集 {{ releasedActivityCount }} 顆靈感星星</p>
+      </div>
+    </footer>
+
     <!-- 編輯按鈕 -->
     <!-- <router-link to="/activityFormPage">
       <button class="edit-button">編輯活動</button>
@@ -204,6 +211,10 @@ const loadMore = () => {
 };
 
 const hasMore = computed(() => visibleActivities.value.length < filteredActivities.value.length);
+
+const releasedActivityCount = computed(() =>
+  activities.value.filter((item) => item.isRelease).length
+);
 
 const trackItemClick = (item) => {
   if (!isClient || typeof window.gtag !== 'function') return;
@@ -373,6 +384,41 @@ watchEffect(() => resetVisibleActivities());
   100% {
     transform: translateY(0);
   }
+}
+
+.home-footer {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+}
+
+.footer-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  background: #f4fbff;
+  border: 1px solid #c9e8ff;
+  border-radius: 18px;
+  padding: 16px 28px;
+  box-shadow: 0 4px 12px rgba(118, 185, 231, 0.25);
+}
+
+.footer-icon {
+  font-size: 30px;
+  margin-bottom: 4px;
+}
+
+.footer-title {
+  margin: 0;
+  font-weight: bold;
+  color: #2177b7;
+  letter-spacing: 2px;
+}
+
+.footer-count {
+  margin: 0;
+  color: #5f7598;
+  font-size: 14px;
 }
 
 .tag-filter {
