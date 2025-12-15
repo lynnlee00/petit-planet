@@ -205,10 +205,27 @@ const loadMore = () => {
 
 const hasMore = computed(() => visibleActivities.value.length < filteredActivities.value.length);
 
+const trackItemClick = (item) => {
+  if (!isClient || typeof window.gtag !== 'function') return;
+  const tagList = Array.isArray(item.tags)
+    ? item.tags
+    : typeof item.tags === 'string'
+      ? item.tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : [];
+
+  window.gtag('event', 'activity_click', {
+    event_category: currentType.value === 'activity' ? '手作' : '遊戲',
+    event_label: item.title || item.id,
+    value: item.id,
+    tags: tagList.join(','),
+  });
+};
+
 // ---------------------
 // 🎯 點擊卡片
 // ---------------------
 const openModal = (item) => {
+  trackItemClick(item);
   if (currentType.value === 'activity') router.push(`/activityDetail?id=${item.id}`);
   else if (item.path) router.push(item.path);
   else alert("找不到這個遊戲的路徑 🙈");

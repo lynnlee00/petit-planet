@@ -4,6 +4,7 @@ import type { Router } from 'vue-router'
 declare global {
   interface Window {
     dataLayer: any[]
+    gtag?: (...args: any[]) => void
   }
 }
 
@@ -21,9 +22,10 @@ export default defineNuxtPlugin((nuxtApp) => {
 
     window.dataLayer = window.dataLayer || []
     function gtag(...args: any[]) {
-      console.log('📡 GA event:', args)
       window.dataLayer.push(arguments)
     }
+
+    window.gtag = gtag;
 
     gtag('js', new Date())
     gtag('config', GA_ID)
