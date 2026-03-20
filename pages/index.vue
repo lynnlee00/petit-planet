@@ -66,8 +66,22 @@
       <div class="footer-card">
         <p class="footer-title">手作收藏夾</p>
         <p class="footer-count">小手作星球已收集 {{ releasedActivityCount }} 顆靈感星星</p>
+        <p class="footer-count pending-count">待釋出的 {{ pendingActivityCount }} 顆靈感</p>
       </div>
     </footer>
+
+    <!-- 左側漂浮統計 -->
+    <div class="floating-count">
+      <div class="floating-title">手作收藏夾</div>
+      <div class="floating-line">
+        <span class="dot released"></span>
+        已收集 {{ releasedActivityCount }} 顆靈感
+      </div>
+      <div class="floating-line">
+        <span class="dot pending"></span>
+        待釋出的 {{ pendingActivityCount }} 顆靈感
+      </div>
+    </div>
 
     <!-- 編輯按鈕 -->
     <!-- <router-link to="/activityFormPage">
@@ -155,6 +169,9 @@ const currentList = computed(() =>
   currentType.value === 'activity' ? sortedActivities.value : sortedGames.value
 );
 
+const isReleasedActivity = (item, today) =>
+  item.isRelease && (!item.releaseDate || item.releaseDate <= today);
+
 // ---------------------
 // 🔍 多關鍵字搜尋邏輯
 // ---------------------
@@ -183,7 +200,7 @@ const clearAllKeywords = () => {
 const filteredActivities = computed(() => {
   const today = new Date().toISOString().slice(0, 10);
   return currentList.value.filter((item) => {
-    const isReleased = item.isRelease && (!item.releaseDate || item.releaseDate <= today);
+    const isReleased = isReleasedActivity(item, today);
     const matchTag = selectedTag.value ? item.tags?.includes(selectedTag.value) : true;
 
     // ✅ 多關鍵字 AND 搜尋
@@ -212,9 +229,15 @@ const loadMore = () => {
 
 const hasMore = computed(() => visibleActivities.value.length < filteredActivities.value.length);
 
-const releasedActivityCount = computed(() =>
-  activities.value.filter((item) => item.isRelease).length
-);
+const releasedActivityCount = computed(() => {
+  const today = new Date().toISOString().slice(0, 10);
+  return activities.value.filter((item) => isReleasedActivity(item, today)).length;
+});
+
+const pendingActivityCount = computed(() => {
+  const today = new Date().toISOString().slice(0, 10);
+  return activities.value.filter((item) => !isReleasedActivity(item, today)).length;
+});
 
 const trackItemClick = (item) => {
   if (!isClient || typeof window.gtag !== 'function') return;
@@ -419,6 +442,72 @@ watchEffect(() => resetVisibleActivities());
   margin: 0;
   color: #5f7598;
   font-size: 14px;
+}
+
+.footer-count + .footer-count {
+  margin-top: 6px;
+}
+
+.pending-count {
+  color: #d0006f;
+  font-weight: 700;
+}
+
+.floating-count {
+  position: fixed;
+  left: 16px;
+  bottom: 120px;
+  background: #fffdf3;
+  border: 2px dashed #f5e1a4;
+  border-radius: 16px;
+  padding: 12px 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  z-index: 50;
+  width: 200px;
+  font-weight: 700;
+  color: #b6881b;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.floating-title {
+  font-size: 14px;
+  letter-spacing: 1px;
+  text-align: left;
+}
+
+.floating-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #5f7598;
+  font-weight: 600;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot.released {
+  background: #66cdaa;
+}
+
+.dot.pending {
+  background: #f7a0c0;
+}
+
+@media (max-width: 600px) {
+  .floating-count {
+    left: 12px;
+    bottom: 90px;
+    width: 170px;
+    padding: 10px 12px;
+  }
 }
 
 .tag-filter {

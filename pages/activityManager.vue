@@ -6,14 +6,23 @@
     <!-- 活動清單 -->
     <h3>📚 手作玩樂列表</h3>
     <div class="grid-list">
-      <div v-for="(activity, id) in activities" :key="id" class="grid-item">
+      <div v-for="activity in sortedActivities" :key="activity.id" class="grid-item">
         <h3>{{ activity.title }}</h3>
 
-        <img :src="activity.image" alt="活動圖片" class="activity-image" />
+        <div class="image-wrapper">
+          <img :src="activity.image" alt="活動圖片" class="activity-image" />
+          <span v-if="!activity.isRelease" class="status-badge draft">📝 草稿</span>
+          <span
+            v-if="isUpcomingRelease(activity)"
+            class="status-badge upcoming"
+          >
+            ⏰ {{ getUpcomingReleaseLabel(activity) }}
+          </span>
+        </div>
         <div class="activity-info">
-          <button @click="previewItem(id, 'activity')" class="preview-button">預覽</button>
-          <button @click="editItem(id, 'activity')">編輯</button>
-          <button class="delete-button" @click="deleteItem(id, 'activity')">刪除</button>
+          <button @click="previewItem(activity.id, 'activity')" class="preview-button">預覽</button>
+          <button @click="editItem(activity.id, 'activity')">編輯</button>
+          <button class="delete-button" @click="deleteItem(activity.id, 'activity')">刪除</button>
         </div>
       </div>
     </div>
@@ -21,14 +30,23 @@
     <!-- 小遊戲清單 -->
     <h3>🎮 小遊戲列表</h3>
     <div class="grid-list">
-      <div v-for="(game, id) in games" :key="id" class="grid-item">
+      <div v-for="game in sortedGames" :key="game.id" class="grid-item">
         <h3>{{ game.title }}</h3>
 
-        <img :src="game.image" alt="遊戲圖片" class="activity-image" />
+        <div class="image-wrapper">
+          <img :src="game.image" alt="遊戲圖片" class="activity-image" />
+          <span v-if="!game.isRelease" class="status-badge draft">📝 草稿</span>
+          <span
+            v-if="isUpcomingRelease(game)"
+            class="status-badge upcoming"
+          >
+            ⏰ {{ getUpcomingReleaseLabel(game) }}
+          </span>
+        </div>
         <div class="activity-info">
-          <button @click="previewItem(id, 'game')" class="preview-button">預覽</button>
-          <button @click="editItem(id, 'game')">編輯</button>
-          <button class="delete-button" @click="deleteItem(id, 'game')">刪除</button>
+          <button @click="previewItem(game.id, 'game')" class="preview-button">預覽</button>
+          <button @click="editItem(game.id, 'game')">編輯</button>
+          <button class="delete-button" @click="deleteItem(game.id, 'game')">刪除</button>
         </div>
       </div>
     </div>
@@ -108,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 //import { db } from '~/utils/firebase'
 import { initFirebase } from '~/utils/firebase'
@@ -125,6 +143,39 @@ const isEditing = ref(false);
 const currentItem = ref({});
 const editingType = ref('activity');
 const router = useRouter();
+
+const toTimestamp = (value) => {
+  if (!value) return 0;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? 0 : parsed.getTime();
+};
+
+const sortCollection = (collection) => {
+  return Object.entries(collection || {}).map(([id, data]) => ({
+    id,
+    ...data,
+  })).sort((a, b) => {
+    const timeA = toTimestamp(a.releaseDate) || toTimestamp(a.createdAt);
+    const timeB = toTimestamp(b.releaseDate) || toTimestamp(b.createdAt);
+    return timeB - timeA;
+  });
+};
+
+const sortedActivities = computed(() => sortCollection(activities.value));
+const sortedGames = computed(() => sortCollection(games.value));
+
+const isUpcomingRelease = (item = {}) => {
+  const releaseTimestamp = toTimestamp(item.releaseDate);
+  if (!releaseTimestamp) return false;
+  return releaseTimestamp > Date.now();
+};
+
+const getUpcomingReleaseLabel = (item = {}) => {
+  if (!item.releaseDate) return '未上架';
+  const date = new Date(item.releaseDate);
+  if (Number.isNaN(date.getTime())) return '未上架';
+  return `${item.releaseDate} 未上架`;
+};
 
 onMounted(() => {
   db = initFirebase().db;
@@ -261,12 +312,41 @@ const deleteMarqueeMessage = async (id) => {
   background-color: #fff;
 }
 
+.image-wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
 .activity-image {
   width: 100%;
   max-width: 160px;
   height: 100px;
   object-fit: cover;
   border-radius: 8px;
+}
+
+.status-badge {
+  position: absolute;
+  top: -6px;
+  left: 8px;
+  background: linear-gradient(120deg, #ffe0e0, #ff9a9a);
+  border-radius: 24px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: bold;
+  color: #8b1b1b;
+  border: 1px solid rgba(220, 20, 60, 0.5);
+  box-shadow: 0 4px 10px rgba(243, 116, 116, 0.35);
+}
+
+.status-badge.upcoming {
+  top: 32px;
+  background: linear-gradient(120deg, #fff6d5, #ffe19a);
+  color: #665200;
+  border-color: rgba(255, 166, 0, 0.5);
+  box-shadow: 0 4px 10px rgba(255, 195, 64, 0.35);
 }
 
 .activity-info {

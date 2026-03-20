@@ -32,9 +32,8 @@
             <div class="slogan-box">
                 <div class="slogan-balloon">
                     <span class="secret-bunny" @click="goSecret" title="管理入口">🐰</span>
-                    魔法星球 每週六｜手作週更 × 遊戲雙週更
+                    魔法星球 每週六｜手作週更 × 遊戲持續優化
                 </div>
-                <div class="beta-status">🚀 封測 ing 中，歡迎體驗給建議！</div>
             </div>
         </header>
 
