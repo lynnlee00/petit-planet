@@ -1,10 +1,5 @@
 <template>
   <section class="container">
-    <!-- 登入 -->
-    <!-- <div class="login-logout-link">
-      <button v-if="!isLoggedIn" @click="goLogin" class="login-button">管理員登入</button>
-      <button v-else @click="logout" class="logout-button">登出</button>
-    </div> -->
     <!-- 跑馬燈 -->
     <Marquee />
 
@@ -59,9 +54,6 @@
       </div>
     </div>
 
-    <p>&nbsp;</p> <!-- 空一格 -->
-    <p>&nbsp;</p> <!-- 空一格 -->
-
     <footer class="home-footer">
       <div class="footer-card">
         <p class="footer-title">手作收藏夾</p>
@@ -82,14 +74,6 @@
         待釋出的 {{ pendingActivityCount }} 顆靈感
       </div>
     </div>
-
-    <!-- 編輯按鈕 -->
-    <!-- <router-link to="/activityFormPage">
-      <button class="edit-button">編輯活動</button>
-    </router-link> -->
-
-    <p>&nbsp;</p> <!-- 空一格 -->
-    <p>&nbsp;</p> <!-- 空一格 -->
 
   </section>
 </template>
@@ -133,7 +117,7 @@ const logout = async () => {
 // ---------------------
 // 🎈 活動與遊戲資料管理
 // ---------------------
-const currentType = useState('currentType');
+const currentType = useState('currentType', () => 'activity');
 const selectedTag = useState('selectedTag', () => null);
 const activities = ref([]);
 const games = ref([]);
@@ -411,6 +395,7 @@ watchEffect(() => resetVisibleActivities());
 
 .home-footer {
   margin-top: 40px;
+  margin-bottom: 60px;
   display: flex;
   justify-content: center;
 }

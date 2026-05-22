@@ -18,7 +18,7 @@
   }
   
   @media (max-width: 600px) {
-  .slogan-box {
+  .slogan {
     display: none;
   }
 }

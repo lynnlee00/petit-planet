@@ -37,11 +37,6 @@
         <textarea v-model="form.steps" rows="4" />
       </label>
 
-      <!-- <label>
-        活動步驟（每行一個步驟）
-        <textarea v-model="form.steps" rows="4" />
-      </label> -->
-
       <label v-if="formType !== 'game'">
         年齡建議
         <input v-model="form.age" placeholder="5歲以上" />
@@ -49,7 +44,7 @@
 
       <label>
         圖片連結
-        <input v-model="form.image" placeholder="5歲以上" />
+        <input v-model="form.image" placeholder="請輸入圖片網址" />
       </label>
 
       <label v-if="formType !== 'game'">
@@ -107,8 +102,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { getDatabase, ref as dbRef, push } from 'firebase/database';
-//import { app } from '~/utils/firebase';
+import { ref as dbRef, push } from 'firebase/database';
 import { initFirebase } from '~/utils/firebase'
 
 const { db } = initFirebase()
@@ -177,7 +171,7 @@ const newData = {
     form.value = {
       title: '',
       description: '',
-      image: '',
+      image: 'https://raw.githubusercontent.com/lynnlee00/my-images/refs/heads/main/commingSoon.png',
       resultImg1: '',
       resultImg2: '',
       materials: '',

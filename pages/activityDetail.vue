@@ -17,7 +17,7 @@
         <h2>{{ activity.title }}</h2>
         <p><strong>活動介紹：</strong>{{ activity.description }}</p>
         <p>&nbsp;</p>
-        <p><strong>材料：</strong><br /><span v-html="formattedMaterials"></span></p>
+        <p><strong>材料：</strong><br /><span class="materials-text">{{ activity.materials }}</span></p>
         <p>&nbsp;</p>
         <p>
           <strong>做法：</strong><br />
@@ -37,9 +37,8 @@
 
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-//import { db } from '~/utils/firebase';
 import { ref as dbRef, get } from 'firebase/database';
 import { initFirebase } from '~/utils/firebase'
 
@@ -90,13 +89,6 @@ const formattedSteps = computed(() => {
   return content;
 });
 
-//🔸
-const formattedMaterials = computed(() => {
-  return activity.value?.materials
-    ?.split('\n')
-    .map(line => ` ${line}`)
-    .join('<br />') || '';
-});
 </script>
 
 <style scoped>
@@ -175,6 +167,10 @@ const formattedMaterials = computed(() => {
 .result-images img {
   width: 100%;
   border-radius: 10px;
+}
+
+.materials-text {
+  white-space: pre-line;
 }
 
 /* 桌機版顯示 desktop-only */
